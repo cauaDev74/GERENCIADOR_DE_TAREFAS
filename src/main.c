@@ -148,7 +148,37 @@ void concluirTarefa(Task tarefas[], int contaTarefas){
 }
 
 void editarTarefa(Task tarefas[], int contaTarefas){
+    if(contaTarefas <= 0){
+        printf("Nenhuma tarefa cadastrada.\n");
+        return;
+    }
 
+    int indice;
+    char confirmar;
+    printf("<<=====SELECIONE UMA TAREFA=====>>\n\n");
+    printf("1 a %d -> ", contaTarefas);
+    if(scanf("%d", &indice) != 1 || indice < 1 || indice > contaTarefas){
+        printf("Indice invalido. \n");
+        clearInputBuffer();
+        return;
+    }
+    clearInputBuffer();
+
+    indice--;
+
+    printf("<<======= | EDITANDO | =======>>\n\n");
+    printf("||==========Tarefa %d============||\n", indice);
+    printf("Nome: %s\n", tarefas[indice].nome);
+    printf("Status: %s\n", tarefas[indice].status);
+    printf("||================================||\n\n");
+    printf("Digite o novo nome: ");
+
+    fgets(tarefas[indice].nome, LENGTH, stdin);
+    tarefas[indice].nome[strcspn(tarefas[indice].nome, "\n")] = 0;
+
+    strcpy(tarefas[indice].status, "Pendente");
+
+    printf("Tarefa editada com sucesso.\n");
 }
 
 void removerTarefa(Task tarefas[], int *contaTarefas){
@@ -175,21 +205,24 @@ void removerTarefa(Task tarefas[], int *contaTarefas){
     printf("Status: %s\n", tarefas[indice].status);
     printf("||================================||\n");
 
-    while(confirmar != 'y' || confirmar != 'n'){
+    while(confirmar != 'y' && confirmar != 'n'){
         printf("Deseja concluir? (y|n): ");
         scanf("%c", &confirmar);
-        getchar();
+        clearInputBuffer();
         confirmar = tolower(confirmar);
+        
     }
     if(confirmar == 'y'){
         for(int i = indice; i < *contaTarefas - 1; i++){
-        tarefas[i] = tarefas[i + 1];
-    }
-
-    (*contaTarefas)--;
-
-    printf("Tarefa deletada com sucesso.\n");
-    }
+            tarefas[i] = tarefas[i + 1];
+        }
+        printf("Tarefa deletada com sucesso.\n");
+        (*contaTarefas)--;
+        return;
+    }else if(confirmar == 'n'){
+        printf("Nada foi deletado.\n");
+        return;
+}
 
 }
 
@@ -236,7 +269,7 @@ void carregarArquivo(Task tarefas[], int *contaTarefas){
         tarefas[i] = t;
     }
     fclose(arquivo);
-    printf("Dados carregados: %d Tarefas carregadas", *contaTarefas);
+    printf("Dados carregados: %d Tarefas carregadas\n", *contaTarefas);
     sleep(1);
 }
 
@@ -245,7 +278,9 @@ int main(){
     Task tasks[MAX];
     int contaTarefas = 0;
     int escolher;
+
     carregarArquivo(tasks, &contaTarefas);
+
     do{
         system("clear");
         printf("//=====================================\\\\\n");
@@ -259,8 +294,7 @@ int main(){
         printf("  ||   (3) ... Listar Tarefas        ||\n");
         printf("  ||   (4) ... Editar Tarefa         ||\n");
         printf("  ||   (5) ... Deletar Tarefa        ||\n");
-        printf("  ||   (6) ... Salvar                ||\n");
-        printf("  ||   (7) ... Sair                  ||\n");
+        printf("  ||   (6) ... Sair                  ||\n");
         printf("  ||                                 ||\n");
         printf("  ||=================================||\n");
         printf("Selecione ==> ");
@@ -286,8 +320,6 @@ int main(){
             break;
         case 6:
             salvarArquivo(tasks, contaTarefas);
-            break;
-        case 7:
             printf("Saindo do programa.\n");
             break;
         default:
