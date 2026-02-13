@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <unistd.h>
 #include <locale.h>
 
 #define LENGTH 40
@@ -10,7 +11,6 @@
 
 typedef struct{
     char nome[LENGTH];
-    char desc[LENGTH];
     char status[LENGTH];
 }Task;
 
@@ -41,9 +41,14 @@ void trim(char str[]){
     str[j] = '\0';
 }
 
+void paraMinusculo(char name[]){
+    for(int i = 0; name[i] != '\0'; i++){
+        name[i] = tolower((unsigned char)name[i]);
+    }
+}
+
 //Funções crud
 void cadastrarTarefa(Task tarefas[], int *indiceT){
-    setlocale(LC_ALL, "Portuguese_Brazil.1252");
     if(*indiceT >= MAX){
         printf("Total de cadastros concluidos.\n");
         return;
@@ -53,7 +58,7 @@ void cadastrarTarefa(Task tarefas[], int *indiceT){
 
     //Recebendo o nome da tarefa
     printf("<============| CADASTRO DE TAREFA |============>\n\n");
-    printf("Insira a tarefa: ");
+    printf("Nome da tarefa: ");
     if(fgets(novaTarefa.nome, LENGTH, stdin) == NULL){
         printf("Erro ao ler o nome.\n");
         return;
@@ -71,23 +76,6 @@ void cadastrarTarefa(Task tarefas[], int *indiceT){
         printf("Descrição inválida.\n");
         return;
     }
-    printf("\n<============================================>\n\n");
-    
-    //Criando uma descrição
-    printf("Insira a descrição: ");
-    if(fgets(novaTarefa.desc, LENGTH, stdin) == NULL){
-        printf("Erro ao ler.\n");
-        return;
-    }
-    novaTarefa.desc[strcspn(novaTarefa.desc, "\n")] = 0;
-    
-    trim(novaTarefa.desc);
-    if(strlen(novaTarefa.desc) == 0){
-        printf("ERRO.\n");
-    }
-    getchar();
-    clearInputBuffer();
-    printf("\n<============================================>\n\n");
     
     strcpy(novaTarefa.status, "Pendente");
     
@@ -96,12 +84,10 @@ void cadastrarTarefa(Task tarefas[], int *indiceT){
     
     printf("Tarefa adicionada com sucesso.\n");
     printf("<============================================>\n\n");
-    system("pause");
 
 }
 
 void listarTarefas(Task tarefas[], int indiceT){
-    setlocale(LC_ALL, "Portuguese_Brazil.1252");
     if(indiceT <= 0){
         printf("Nao ha tarefas cadastradas.\n");
         return;
@@ -110,82 +96,211 @@ void listarTarefas(Task tarefas[], int indiceT){
     printf("||        Lista de Tarefas:      ||\n");
     printf("\\\\=============================//\n\n");
 
-    printf("||================================||\n");
+    printf("\n");
     for(int i = 0; i < indiceT; i++){
         printf("||==========Tarefa %d============||\n", i+1);
         printf("Nome: %s\n", tarefas[i].nome);
-        printf("Descr: %s\n", tarefas[i].desc);
         printf("Status: %s\n", tarefas[i].status);
         printf("||================================||\n");
     }
     
 }
 
-void concluirTarefa(Task tarefas[], int *indiceT, int *indiceC){
-    if(*indiceT <= 0){
+void concluirTarefa(Task tarefas[], int contaTarefas){
+    if(contaTarefas <= 0){
         printf("Nenhuma tarefa cadastrada.\n");
         return;
     }
 
+    int indice;
+    char confirmar;
     printf("<<=====SELECIONE UMA TAREFA=====>>\n\n");
-    printf("-> ");
-}
-
-void removerTarefa();
-
-void menu(int *escolha){
-    setlocale(LC_ALL, "Portuguese_Brazil.1252");
-    int select;
-     printf("//=====================================\\\\\n");
-    printf("||                                       ||\n");
-    printf("||           GERENCIADOR DE TAREFAS      ||\n");
-    printf("||                                       ||\n");
-    printf("\\\\=====================================//\n");
-    printf("  ||                                 ||\n");
-    printf("  ||   (1) ... Cadastrar tarefa      ||\n");
-    printf("  ||   (2) ... Concluir tarefa       ||\n");
-    printf("  ||   (3) ... Listar Tarefas        ||\n");
-    printf("  ||   (4) ... Editar Tarefa         ||\n");
-    printf("  ||   (5) ... Deletar Tarefa        ||\n");
-    printf("  ||   (7) ... Sair e salvar         ||\n");
-    printf("  ||                                 ||\n");
-    printf("  ||=================================||\n");
-    printf("Selecione ==> ");
-    scanf("%d", &select);
+    printf("1 a %d -> ", contaTarefas);
+    if(scanf("%d", &indice) != 1 || indice < 1 || indice > contaTarefas){
+        printf("Indice invalido. \n");
+        clearInputBuffer();
+        return;
+    }
     clearInputBuffer();
 
-    *escolha = select;
+    indice--;
+
+    printf("||==========Tarefa %d============||\n", indice);
+    printf("Nome: %s\n", tarefas[indice].nome);
+    printf("Status: %s\n", tarefas[indice].status);
+    printf("||================================||\n");
+    while(confirmar != 'y' || confirmar != 'n'){
+        printf("Deseja concluir? (y|n): ");
+        scanf("%c", &confirmar);
+        getchar();
+        confirmar = tolower(confirmar);
+
+        if(confirmar == 'y'){
+            strcpy(tarefas[indice].status, "Concluido");
+            printf("Tarefa concluida.\n");
+            return;
+        }else if(confirmar == 'n'){
+            printf("Tarefa nao concluida.\n");
+            return;
+        }
+    }
+
+}
+
+void editarTarefa(Task tarefas[], int contaTarefas){
+
+}
+
+void removerTarefa(Task tarefas[], int *contaTarefas){
+    if(*contaTarefas <= 0){
+        printf("Nenhuma tarefa cadastrada.\n");
+        return;
+    }
+
+    int indice;
+    char confirmar;
+    printf("<<=====SELECIONE UMA TAREFA=====>>\n\n");
+    printf("1 a %d -> ", *contaTarefas);
+    if(scanf("%d", &indice) != 1 || indice < 1 || indice > *contaTarefas){
+        printf("Indice invalido. \n");
+        clearInputBuffer();
+        return;
+    }
+    clearInputBuffer();
+
+    indice--;
+
+    printf("||==========Tarefa %d============||\n", indice);
+    printf("Nome: %s\n", tarefas[indice].nome);
+    printf("Status: %s\n", tarefas[indice].status);
+    printf("||================================||\n");
+
+    while(confirmar != 'y' || confirmar != 'n'){
+        printf("Deseja concluir? (y|n): ");
+        scanf("%c", &confirmar);
+        getchar();
+        confirmar = tolower(confirmar);
+    }
+    if(confirmar == 'y'){
+        for(int i = indice; i < *contaTarefas - 1; i++){
+        tarefas[i] = tarefas[i + 1];
+    }
+
+    (*contaTarefas)--;
+
+    printf("Tarefa deletada com sucesso.\n");
+    }
+
 }
 
 //Funções arquivo
-void salvarArquivo();
-void carregarArquivo();
+void salvarArquivo(Task tarefas[], int contaTarefas){
+    FILE *arquivo = fopen("data/tasks.txt", "w");
+
+    if(arquivo == NULL){
+        printf("Erro ao ler o arquivo.\n");
+        return;
+    }
+
+    //1. Salva a quantidade total
+    fprintf(arquivo, "%d\n", contaTarefas);
+
+    for(int i = 0; i < contaTarefas; i++){
+        fprintf(arquivo, "%s\n", tarefas[i].nome);
+        fprintf(arquivo, "%s\n", tarefas[i].status);
+    }
+    fclose(arquivo);
+    printf("Arquivo salvo com sucesso.\n");
+}
+void carregarArquivo(Task tarefas[], int *contaTarefas){
+    FILE *arquivo = fopen("data/tasks.txt", "r");
+
+    if(arquivo == NULL){
+        printf("Erro ao carregar o arquivo.\n");
+        return;
+    }
+
+    fscanf(arquivo, "%d", contaTarefas);
+
+    fgetc(arquivo);
+
+    for(int i = 0; i < *contaTarefas; i++){
+        Task t;
+
+        if(fgets(t.nome, LENGTH, arquivo) == NULL) break;
+        t.nome[strcspn(t.nome, "\n")] = 0;
+
+        if(fgets(t.status, LENGTH, arquivo) == NULL) break;
+        t.status[strcspn(t.status, "\n")] = 0;
+
+        tarefas[i] = t;
+    }
+    fclose(arquivo);
+    printf("Dados carregados: %d Tarefas carregadas", *contaTarefas);
+    sleep(1);
+}
 
 int main(){
     setlocale(LC_ALL, "Portuguese_Brazil.1252");
     Task tasks[MAX];
     int contaTarefas = 0;
-    int contaTaskConcluida = 0;
     int escolher;
-
+    carregarArquivo(tasks, &contaTarefas);
     do{
         system("clear");
-        menu(&escolher);
-        
+        printf("//=====================================\\\\\n");
+        printf("||                                       ||\n");
+        printf("||           GERENCIADOR DE TAREFAS      ||\n");
+        printf("||                                       ||\n");
+        printf("\\\\=====================================//\n");
+        printf("  ||                                 ||\n");
+        printf("  ||   (1) ... Cadastrar tarefa      ||\n");
+        printf("  ||   (2) ... Concluir tarefa       ||\n");
+        printf("  ||   (3) ... Listar Tarefas        ||\n");
+        printf("  ||   (4) ... Editar Tarefa         ||\n");
+        printf("  ||   (5) ... Deletar Tarefa        ||\n");
+        printf("  ||   (6) ... Salvar                ||\n");
+        printf("  ||   (7) ... Sair                  ||\n");
+        printf("  ||                                 ||\n");
+        printf("  ||=================================||\n");
+        printf("Selecione ==> ");
+        scanf("%d", &escolher);
+        clearInputBuffer();
+
+
         switch (escolher){
-            case 1:
-            system("cls");
+        case 1:
             cadastrarTarefa(tasks, &contaTarefas);
             break;
-            case 3:
-            system("cls");
+        case 2:
+            concluirTarefa(tasks, contaTarefas);
+            break;
+        case 3:
             listarTarefas(tasks, contaTarefas);
+            break;
+        case 4:
+            editarTarefa(tasks, contaTarefas);
+            break;
+        case 5:
+            removerTarefa(tasks, &contaTarefas);
+            break;
+        case 6:
+            salvarArquivo(tasks, contaTarefas);
+            break;
         case 7:
-            exit(1);
+            printf("Saindo do programa.\n");
+            break;
         default:
+            printf("Opcao nao encontrada.\n");
             break;
         }
-    }while(1);
+
+        if(escolher != 7){
+            printf("\nPressione ENTER para continuar...");
+            getchar(); 
+        }
+
+    }while(escolher != 7);
 
 
 
