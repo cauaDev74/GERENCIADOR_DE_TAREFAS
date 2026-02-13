@@ -228,7 +228,7 @@ void removerTarefa(Task tarefas[], int *contaTarefas){
 
 //Funções arquivo
 void salvarArquivo(Task tarefas[], int contaTarefas){
-    FILE *arquivo = fopen("data/tasks.txt", "w");
+    FILE *arquivo = fopen("data/tasks.csv", "w");
 
     if(arquivo == NULL){
         printf("Erro ao ler o arquivo.\n");
@@ -246,7 +246,7 @@ void salvarArquivo(Task tarefas[], int contaTarefas){
     printf("Arquivo salvo com sucesso.\n");
 }
 void carregarArquivo(Task tarefas[], int *contaTarefas){
-    FILE *arquivo = fopen("data/tasks.txt", "r");
+    FILE *arquivo = fopen("data/tasks.csv", "r");
 
     if(arquivo == NULL){
         printf("Erro ao carregar o arquivo.\n");
@@ -327,14 +327,12 @@ int main(){
             break;
         }
 
-        if(escolher != 7){
+        if(escolher != 6){
             printf("\nPressione ENTER para continuar...");
             getchar(); 
         }
 
-    }while(escolher != 7);
-
-
+    }while(escolher != 6);
 
     return 0;
 }
